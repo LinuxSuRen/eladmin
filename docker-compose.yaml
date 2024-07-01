@@ -1,13 +1,27 @@
 services:
+  eladmin-web:
+    image: ghcr.io/linuxsuren/beihang-mem
+    environment:
+      VUE_APP_BASE_API: eladmin
+    depends_on:
+      eladmin:
+        condition: service_healthy
+    links:
+      - eladmin
+    ports:
+      - 8080:80
   eladmin:
     build:
       context: .
       dockerfile: Dockerfile
-    # image: test
-    ports:
-      - 8000:8000
     environment:
       DB_HOST: mysql
+    healthcheck:
+      test: ["CMD", "bash", "-c", "cat < /dev/null > /dev/tcp/127.0.0.1/8000"]
+      interval: 3s
+      timeout: 60s
+      retries: 10
+      start_period: 3s
     depends_on:
       mysql:
         condition: service_healthy
